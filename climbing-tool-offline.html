@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>攀岩等级转换工具（离线版）</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        input, select, button {
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        input {
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        select {
+            background: white;
+            min-width: 150px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            padding: 12px 25px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        }
+        
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .result.success {
+            border-left-color: #27ae60;
+            background: #d5f4e6;
+        }
+        
+        .result.error {
+            border-left-color: #e74c3c;
+            background: #fadbd8;
+        }
+        
+        .result.info {
+            border-left-color: #3498db;
+            background: #d6eaf8;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        th {
+            background: #34495e;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        tr:hover {
+            background: #e8f4f8;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+        
+        .status {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        
+        .status.success {
+            background: #d5f4e6;
+            color: #27ae60;
+            border: 1px solid #27ae60;
+        }
+        
+        .status.error {
+            background: #fadbd8;
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+        }
+        
+        .status.warning {
+            background: #fef9e7;
+            color: #f39c12;
+            border: 1px solid #f39c12;
+        }
+        
+        .examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .example-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e1e8ed;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .example-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: #3498db;
+        }
+        
+        .example-system {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .example-grade {
+            font-size: 1.2em;
+            color: #3498db;
+            font-weight: 600;
+        }
+        
+        .feature-badge {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            input, select, button {
+                width: 100%;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧗 攀岩等级转换工具</h1>
+            <p>完全离线版本 - 无需网络连接</p>
+        </div>
+        
+        <div class="content">
+            <div class="status success">
+                ✅ 离线版本已就绪！所有功能均可使用，无需网络连接。
+            </div>
+            
+            <div class="section">
+                <h2>🔁 等级转换</h2>
+                <div class="input-group">
+                    <input type="text" id="gradeInput" placeholder="输入等级，如: 5.11a 或 6c">
+                    <select id="fromSystem">
+                        <option value="YDS">YDS (美式)</option>
+                        <option value="French">French (法式)</option>
+                        <option value="Font">Font (抱石)</option>
+                        <option value="VScale">V Scale (抱石)</option>
+                    </select>
+                    <span>→</span>
+                    <select id="toSystem">
+                        <option value="French">French (法式)</option>
+                        <option value="YDS">YDS (美式)</option>
+                        <option value="Font">Font (抱石)</option>
+                        <option value="VScale">V Scale (抱石)</option>
+                    </select>
+                    <button onclick="convertGrade()">转换等级</button>
+                </div>
+                <div id="conversionResult" class="result"></div>
+                
+                <div class="examples">
+                    <div class="example-card" onclick="setExample('5.10a', 'YDS', 'French')">
+                        <div class="example-system">YDS → French</div>
+                        <div class="example-grade">5.10a → 5c/6a</div>
+                    </div>
+                    <div class="example-card" onclick="setExample('6a', 'French', 'YDS')">
+                        <div class="example-system">French → YDS</div>
+                        <div class="example-grade">6a → 5.10b</div>
+                    </div>
+                    <div class="example-card" onclick="setExample('V4', 'VScale', 'Font')">
+                        <div class="example-system">V Scale → Font</div>
+                        <div class="example-grade">V4 → 6c</div>
+                    </div>
+                    <div class="example-card" onclick="setExample('7a', 'Font', 'VScale')">
+                        <div class="example-system">Font → V Scale</div>
+                        <div class="example-grade">7a → V6</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>⚖️ 等级比较</h2>
+                <div class="input-group">
+                    <input type="text" id="grade1" placeholder="第一个等级">
+                    <select id="system1">
+                        <option value="YDS">YDS</option>
+                        <option value="French">French</option>
+                        <option value="Font">Font</option>
+                        <option value="VScale">V Scale</option>
+                    </select>
+                    <span>vs</span>
+                    <input type="text" id="grade2" placeholder="第二个等级">
+                    <select id="system2">
+                        <option value="YDS">YDS</option>
+                        <option value="French">French</option>
+                        <option value="Font">Font</option>
+                        <option value="VScale">V Scale</option>
+                    </select>
+                    <button onclick="compareGrades()">比较难度</button>
+                </div>
+                <div id="comparisonResult" class="result"></div>
+                
+                <div class="examples">
+                    <div class="example-card" onclick="setComparisonExample('5.11a', 'YDS', '6c', 'French')">
+                        <div class="example-system">YDS 5.11a vs French 6c</div>
+                        <div class="example-grade">难度相当</div>
+                    </div>
+                    <div class="example-card" onclick="setComparisonExample('7a', 'French', 'V6', 'VScale')">
+                        <div class="example-system">French 7a vs V6</div>
+                        <div class="example-grade">难度相当</div>
+                    </div>
+                    <div class="example-card" onclick="setComparisonExample('5.10a', 'YDS', '6a', 'French')">
+                        <div class="example-system">YDS 5.10a vs French 6a</div>
+                        <div class="example-grade">6a更难</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>📊 等级参考表</h2>
+                <div id="referenceTable">
+                    <div class="loading">正在生成等级参考表...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 完全离线的攀岩等级转换库
+        const OfflineClimbingGrades = {
+            // 等级对照表数据
+            gradeTable: [
+                // YDS to French conversions
+                { YDS: '5.0', French: '1', score: 10 },
+                { YDS: '5.1', French: '1', score: 12 },
+                { YDS: '5.2', French: '2', score: 14 },
+                { YDS: '5.3', French: '3', score: 16 },
+                { YDS: '5.4', French: '3+', score: 18 },
+                { YDS: '5.5', French: '4a', score: 20 },
+                { YDS: '5.6', French: '4b', score: 22 },
+                { YDS: '5.7', French: '4c', score: 24 },
+                { YDS: '5.8', French: '5a', score: 26 },
+                { YDS: '5.9', French: '5b', score: 28 },
+                { YDS: '5.10a', French: '5c/6a', score: 30 },
+                { YDS: '5.10b', French: '6a', score: 32 },
+                { YDS: '5.10c', French: '6a+', score: 34 },
+                { YDS: '5.10d', French: '6b', score: 36 },
+                { YDS: '5.11a', French: '6b+/6c', score: 38 },
+                { YDS: '5.11b', French: '6c', score: 40 },
+                { YDS: '5.11c', French: '6c+', score: 42 },
+                { YDS: '5.11d', French: '7a', score: 44 },
+                { YDS: '5.12a', French: '7a+', score: 46 },
+                { YDS: '5.12b', French: '7b', score: 48 },
+                { YDS: '5.12c', French: '7b+', score: 50 },
+                { YDS: '5.12d', French: '7c', score: 52 },
+                { YDS: '5.13a', French: '7c+', score: 54 },
+                { YDS: '5.13b', French: '8a', score: 56 },
+                { YDS: '5.13c', French: '8a+', score: 58 },
+                { YDS: '5.13d', French: '8b', score: 60 },
+                { YDS: '5.14a', French: '8b+', score: 62 },
+                { YDS: '5.14b', French: '8c', score: 64 },
+                { YDS: '5.14c', French: '8c+', score: 66 },
+                { YDS: '5.14d', French: '9a', score: 68 },
+                { YDS: '5.15a', French: '9a+', score: 70 },
+                
+                // French to Font conversions
+                { French: '1', Font: '1', score: 10 },
+                { French: '2', Font: '2', score: 12 },
+                { French: '3', Font: '3', score: 14 },
+                { French: '3+', Font: '3+', score: 16 },
+                { French: '4a', Font: '4', score: 18 },
+                { French: '4b', Font: '4+', score: 20 },
+                { French: '4c', Font: '5', score: 22 },
+                { French: '5a', Font: '5+', score: 24 },
+                { French: '5b', Font: '6a', score: 26 },
+                { French: '5c', Font: '6a+', score: 28 },
+                { French: '6a', Font: '6b', score: 30 },
+                { French: '6a+', Font: '6b+', score: 32 },
+                { French: '6b', Font: '6c', score: 34 },
+                { French: '6b+', Font: '6c+', score: 36 },
+                { French: '6c', Font: '7a', score: 38 },
+                { French: '6c+', Font: '7a+', score: 40 },
+                { French: '7a', Font: '7b', score: 42 },
+                { French: '7a+', Font: '7b+', score: 44 },
+                { French: '7b', Font: '7c', score: 46 },
+                { French: '7b+', Font: '7c+', score: 48 },
+                { French: '7c', Font: '8a', score: 50 },
+                { French: '7c+', Font: '8a+', score: 52 },
+                { French: '8a', Font: '8b', score: 54 },
+                { French: '8a+', Font: '8b+', score: 56 },
+                { French: '8b', Font: '8c', score: 58 },
+                { French: '8b+', Font: '8c+', score: 60 },
+                { French: '8c', Font: '9a', score: 62 },
+                { French: '8c+', Font: '9a+', score: 64 },
+                { French: '9a', Font: '9b', score: 66 },
+                { French: '9a+', Font: '9b+', score: 68 },
+                
+                // Font to VScale conversions
+                { Font: '3', VScale: 'VB', score: 10 },
+                { Font: '3+', VScale: 'VB', score: 12 },
+                { Font: '4', VScale: 'VB+', score: 14 },
+                { Font: '4+', VScale: 'V0', score: 16 },
+                { Font: '5', VScale: 'V0', score: 18 },
+                { Font: '5+', VScale: 'V0+', score: 20 },
+                { Font: '6a', VScale: 'V1', score: 22 },
+                { Font: '6a+', VScale: 'V2', score: 24 },
+                { Font: '6b', VScale: 'V2', score: 26 },
+                { Font: '6b+', VScale: 'V3', score: 28 },
+                { Font: '6c', VScale: 'V3', score: 30 },
+                { Font: '6c+', VScale: 'V4', score: 32 },
+                { Font: '7a', VScale: 'V4', score: 34 },
+                { Font: '7a+', VScale: 'V5', score: 36 },
+                { Font: '7b', VScale: 'V5', score: 38 },
+                { Font: '7b+', VScale: 'V6', score: 40 },
+                { Font: '7c', VScale: 'V6', score: 42 },
+                { Font: '7c+', VScale: 'V7', score: 44 },
+                { Font: '8a', VScale: 'V7', score: 46 },
+                { Font: '8a+', VScale: 'V8', score: 48 },
+                { Font: '8b', VScale: 'V8', score: 50 },
+                { Font: '8b+', VScale: 'V9', score: 52 },
+                { Font: '8c', VScale: 'V9', score: 54 },
+                { Font: '8c+', VScale: 'V10', score: 56 },
+                { Font: '9a', VScale: 'V10', score: 58 },
+                { Font: '9a+', VScale: 'V11', score: 60 },
+                { Font: '9b', VScale: 'V12', score: 62 },
+                { Font: '9b+', VScale: 'V13', score: 64 }
+            ],
+
+            // 转换等级
+            convertGrade: function(grade, fromSystem, toSystem) {
+                // 首先尝试直接匹配
+                let directMatch = this.gradeTable.find(item => 
+                    item[fromSystem] === grade && item[toSystem]
+                );
+                
+                if (directMatch) {
+                    return directMatch[toSystem];
+                }
+
+                // 如果没有直接匹配，通过分数系统转换
+                const fromItem = this.gradeTable.find(item => item[fromSystem] === grade);
+                if (!fromItem) {
+                    throw new Error(`未知的等级: ${grade} (${fromSystem})`);
+                }
+
+                // 找到相同分数范围内的目标系统等级
+                const targetItems = this.gradeTable.filter(item => 
+                    item[toSystem] && Math.abs(item.score - fromItem.score) <= 2
+                );
+
+                if (targetItems.length > 0) {
+                    // 返回分数最接近的等级
+                    return targetItems[0][toSystem];
+                }
+
+                throw new Error(`无法转换: ${grade} (${fromSystem}) → ${toSystem}`);
+            },
+
+            // 获取等级分数
+            getScore: function(grade, system) {
+                const item = this.gradeTable.find(item => item[system] === grade);
+                if (!item) {
+                    throw new Error(`未知的等级: ${grade} (${system})`);
+                }
+                return [item.score, item.score + 1]; // 返回分数范围
+            },
+
+            // 验证等级
+            isType: function(grade, system) {
+                return this.gradeTable.some(item => item[system] === grade);
+            },
+
+            // 获取等级波段
+            getGradeBand: function(grade, system) {
+                const item = this.gradeTable.find(item => item[system] === grade);
+                if (!item) return 'unknown';
+                
+                if (item.score < 30) return 'beginner';
+                if (item.score < 45) return 'intermediate';
+                if (item.score < 60) return 'advanced';
+                return 'expert';
+            }
+        };
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            generateReferenceTable();
+        });
+
+        // 等级转换函数
+        window.convertGrade = function() {
+            const grade = document.getElementById('gradeInput').value.trim();
+            const fromSystem = document.getElementById('fromSystem').value;
+            const toSystem = document.getElementById('toSystem').value;
+
+            if (!grade) {
+                showResult('conversionResult', '请输入要转换的等级。', 'error');
+                return;
+            }
+
+            try {
+                const result = OfflineClimbingGrades.convertGrade(grade, fromSystem, toSystem);
+                
+                showResult('conversionResult', 
+                    `<strong>转换结果：</strong><br>
+                     ${grade} (${fromSystem}) → <strong>${result}</strong> (${toSystem})`, 
+                    'success');
+                    
+            } catch (error) {
+                showResult('conversionResult', 
+                    `<strong>转换失败：</strong><br>${error.message}`, 
+                    'error');
+            }
+        };
+
+        // 等级比较函数
+        window.compareGrades = function() {
+            const grade1 = document.getElementById('grade1').value.trim();
+            const system1 = document.getElementById('system1').value;
+            const grade2 = document.getElementById('grade2').value.trim();
+            const system2 = document.getElementById('system2').value;
+
+            if (!grade1 || !grade2) {
+                showResult('comparisonResult', '请输入要比较的两个等级。', 'error');
+                return;
+            }
+
+            try {
+                const score1 = OfflineClimbingGrades.getScore(grade1, system1);
+                const score2 = OfflineClimbingGrades.getScore(grade2, system2);
+
+                const diff = score1[0] - score2[0];
+                let message = '';
+                
+                if (diff > 3) {
+                    message = `<strong>${grade1} (${system1})</strong> 明显比 <strong>${grade2} (${system2})</strong> 难`;
+                } else if (diff > 0) {
+                    message = `<strong>${grade1} (${system1})</strong> 比 <strong>${grade2} (${system2})</strong> 稍难`;
+                } else if (diff === 0) {
+                    message = `<strong>${grade1} (${system1})</strong> 和 <strong>${grade2} (${system2})</strong> 难度相当`;
+                } else if (diff > -3) {
+                    message = `<strong>${grade2} (${system2})</strong> 比 <strong>${grade1} (${system1})</strong> 稍难`;
+                } else {
+                    message = `<strong>${grade2} (${system2})</strong> 明显比 <strong>${grade1} (${system1})</strong> 难`;
+                }
+
+                showResult('comparisonResult', 
+                    `<strong>比较结果：</strong><br>${message}<br><br>
+                     <small>${grade1} 分数: ${score1[0]} | ${grade2} 分数: ${score2[0]}</small>`, 
+                    'success');
+                    
+            } catch (error) {
+                showResult('comparisonResult', 
+                    `<strong>比较失败：</strong><br>${error.message}`, 
+                    'error');
+            }
+        };
+
+        // 显示结果函数
+        function showResult(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.className = `result ${type}`;
+        }
+
+        // 设置转换示例
+        window.setExample = function(grade, fromSystem, toSystem) {
+            document.getElementById('gradeInput').value = grade;
+            document.getElementById('fromSystem').value = fromSystem;
+            document.getElementById('toSystem').value = toSystem;
+            convertGrade();
+        }
+
+        // 设置比较示例
+        window.setComparisonExample = function(grade1, system1, grade2, system2) {
+            document.getElementById('grade1').value = grade1;
+            document.getElementById('system1').value = system1;
+            document.getElementById('grade2').value = grade2;
+            document.getElementById('system2').value = system2;
+            compareGrades();
+        }
+
+        // 生成参考表
+        function generateReferenceTable() {
+            const uniqueYDS = [...new Set(OfflineClimbingGrades.gradeTable
+                .filter(item => item.YDS)
+                .map(item => item.YDS)
+            )].sort((a, b) => {
+                // 自定义排序：按数字和字母排序
+                return OfflineClimbingGrades.getScore(a, 'YDS')[0] - OfflineClimbingGrades.getScore(b, 'YDS')[0];
+            });
+
+            let tableHTML = '<table>';
+            tableHTML += `
+                <tr>
+                    <th>YDS</th>
+                    <th>French</th>
+                    <th>Font</th>
+                    <th>V Scale</th>
+                </tr>
+            `;
+            
+            uniqueYDS.forEach(yds => {
+                try {
+                    const french = OfflineClimbingGrades.convertGrade(yds, 'YDS', 'French');
+                    const font = OfflineClimbingGrades.convertGrade(yds, 'YDS', 'Font');
+                    const vscale = OfflineClimbingGrades.convertGrade(yds, 'YDS', 'VScale');
+                    
+                    tableHTML += `
+                        <tr>
+                            <td><strong>${yds}</strong></td>
+                            <td>${french}</td>
+                            <td>${font}</td>
+                            <td>${vscale}</td>
+                        </tr>
+                    `;
+                } catch (error) {
+                    // 跳过转换错误的等级
+                }
+            });
+            
+            tableHTML += '</table>';
+            document.getElementById('referenceTable').innerHTML = tableHTML;
+        }
+    </script>
+</body>
+</html>
